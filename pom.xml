@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<name>kafka-es-consumer</name>
+	<name>kafka-es-indexer</name>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.elasticsearch.kafka.consumer</groupId>
-	<artifactId>kafka-es-consumer</artifactId>
-	<version>0.2</version>
+	<artifactId>kafka-es-indexer</artifactId>
+	<version>${buildId}.${buildNumber}</version>
 	<packaging>jar</packaging>
-	<description>Kafka standalone consumer for elasticsearch</description>
+	<description>Kafka standalone indexer for elasticsearch</description>
 	<inceptionYear>2014</inceptionYear>
 	<licenses>
 		<license>
@@ -17,22 +17,13 @@
 		</license>
 	</licenses>
 	<properties>
+		<buildId>2</buildId>
+		<buildNumber>0</buildNumber>
 		<elasticsearch.version>1.5.1</elasticsearch.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
-	<pluginRepositories>
-		<pluginRepository>
-			<id>onejar-maven-plugin.googlecode.com</id>
-			<url>http://onejar-maven-plugin.googlecode.com/svn/mavenrepo</url>
-		</pluginRepository>
-	</pluginRepositories>
 
 	<dependencies>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>3.8.1</version>
-			<scope>test</scope>
-		</dependency>
 		<dependency>
 			<groupId>org.elasticsearch</groupId>
 			<artifactId>elasticsearch</artifactId>
@@ -50,11 +41,6 @@
 			<version>1.0.1</version>
 		</dependency>
 		<dependency>
-			<groupId>com.timgroup</groupId>
-			<artifactId>java-statsd-client</artifactId>
-			<version>1.0.1</version>
-		</dependency>
-		<dependency>
 			<groupId>org.codehaus.jackson</groupId>
 			<artifactId>jackson-mapper-asl</artifactId>
 			<version>1.9.3</version>
@@ -63,16 +49,6 @@
 			<groupId>org.scala-lang</groupId>
 			<artifactId>scala-library</artifactId>
 			<version>2.10.0</version>
-		</dependency>
-		<dependency>
-			<groupId>net.sf.jopt-simple</groupId>
-			<artifactId>jopt-simple</artifactId>
-			<version>3.2</version>
-		</dependency>
-		<dependency>
-			<groupId>com.github.sgroschupf</groupId>
-			<artifactId>zkclient</artifactId>
-			<version>0.1</version>
 		</dependency>
 		<dependency>
 			<groupId>log4j</groupId>
@@ -118,17 +94,6 @@
 			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>org.easymock</groupId>
-			<artifactId>easymock</artifactId>
-			<version>3.0</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>commons-daemon</groupId>
-			<artifactId>commons-daemon</artifactId>
-			<version>1.0.15</version>
-		</dependency>
-		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
 			<version>1.1.3</version>
@@ -138,36 +103,26 @@
 			<artifactId>logback-core</artifactId>
 			<version>1.1.3</version>
 		</dependency>
-
+		<dependency>
+		  <groupId>org.codehaus.janino</groupId>
+		  <artifactId>janino</artifactId>
+		  <version>2.7.8</version>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.12</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-all</artifactId>
+			<version>1.10.19</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<directory>bin</directory>
 		<outputDirectory>${project.build.directory}/classes</outputDirectory>
 		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-shade-plugin</artifactId>
-				<version>2.3</version>
-				<executions>
-					<!-- Run shade goal on package phase -->
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>shade</goal>
-						</goals>
-						<configuration>
-							<transformers>
-								<!-- add Main-Class to manifest file -->
-								<transformer
-									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-									<mainClass>org.elasticsearch.kafka.consumer.daemon.KafkaConsumerMain</mainClass>
-
-								</transformer>
-							</transformers>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
@@ -180,8 +135,7 @@
 							<goal>copy-dependencies</goal>
 						</goals>
 						<configuration>
-							<!-- <includeGroupIds>log4j</includeGroupIds> -->
-							<outputDirectory>${project.build.directory}/dep-jars/</outputDirectory>
+                			<outputDirectory>${project.build.directory}/lib/</outputDirectory>
 						</configuration>
 					</execution>
 				</executions>
@@ -195,41 +149,25 @@
 					<target>1.8</target>
 				</configuration>
 			</plugin>
-			<!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-source-plugin</artifactId> 
-				<version>2.1.2</version> <executions> <execution> <id>attach-sources</id> 
-				<goals> <goal>jar</goal> </goals> </execution> </executions> </plugin> -->
-			<!-- <plugin> <artifactId>maven-assembly-plugin</artifactId> <version>2.3</version> 
-				<configuration> <appendAssemblyId>false</appendAssemblyId> <outputDirectory>${project.build.directory}/releases/</outputDirectory> 
-				<descriptors> <descriptor>${basedir}/src/main/assemblies/plugin.xml</descriptor> 
-				</descriptors> </configuration> <executions> <execution> <phase>package</phase> 
-				<goals> <goal>single</goal> </goals> </execution> </executions> </plugin> -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.12</version>
-				<configuration>
-					<skipTests>true</skipTests>
-					<testFailureIgnore>true</testFailureIgnore>
-					<argLine>-XX:-UseSplitVerifier</argLine>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>cobertura-maven-plugin</artifactId>
-				<version>2.5.1</version>
-				<configuration>
-					<formats>
-						<format>xml</format>
-					</formats>
-				</configuration>
+				<artifactId>maven-source-plugin</artifactId>
 				<executions>
 					<execution>
-						<phase>cobertura</phase>
+						<id>attach-sources</id>
 						<goals>
-							<goal>cobertura</goal>
+							<goal>jar</goal>
 						</goals>
 					</execution>
 				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>2.6</version>
+				<configuration>
+				<outputDirectory>${project.build.directory}/lib/</outputDirectory>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
